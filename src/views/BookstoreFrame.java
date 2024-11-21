@@ -1,13 +1,17 @@
 package views;
 
 import models.Book;
+import views.BookstoreFrame.QuantityCellEditor;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
+import javax.swing.table.DefaultTableCellRenderer;  
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,10 +39,10 @@ public class BookstoreFrame extends JFrame {
         addBooks(mainPanel);
 
         // Cart Button
-        JButton cartButton = new JButton("View Cart");
+        JButton cartButton = new JButton("VIEW CART");
         cartButton.setBounds(10, 10, 100, 40);
         cartButton.setFont(new Font("Arial", Font.BOLD, 16));
-        cartButton.setBackground(Color.CYAN);
+        cartButton.setBackground(Color.getHSBColor(208, 75, 65));
         cartButton.setForeground(Color.BLACK);
         cartButton.addActionListener(new ActionListener() {
             @Override
@@ -120,79 +124,105 @@ public class BookstoreFrame extends JFrame {
         return rowPanel;
     }
     
+private JPanel createBookCard(Book book) {
+    JPanel card = new JPanel(new BorderLayout());
+    card.setPreferredSize(new Dimension(220, 360)); // Adjust size of each book card
 
-    private JPanel createBookCard(Book book) {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setPreferredSize(new Dimension(220, 360)); // Adjust size of each book card
-    
-        // Book cover image
-        ImageIcon bookCover = new ImageIcon(book.getImagePath());
-        JLabel coverLabel = new JLabel(new ImageIcon(bookCover.getImage().getScaledInstance(160, 240, Image.SCALE_SMOOTH)));
-    
-        // Title and author
-        JLabel titleLabel = new JLabel(book.getTitle(), JLabel.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        JLabel authorLabel = new JLabel("By " + book.getAuthor(), JLabel.CENTER);
-        authorLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-    
-        // Price (in INR)
-        JLabel priceLabel = new JLabel("₹ " + book.getPrice(), JLabel.CENTER);
-        priceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-    
-        // Add to Cart button
-        JButton addToCartButton = new JButton("Add to Cart");
-        addToCartButton.setBackground(Color.CYAN);
-        addToCartButton.setForeground(Color.BLACK);
-        addToCartButton.setFont(new Font("Arial", Font.BOLD, 12));
-        addToCartButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cart.add(book);
-                JOptionPane.showMessageDialog(null, book.getTitle() + " added to cart.");
-                updateCartLabel(); // Update cart count
+    // Book cover image
+    ImageIcon bookCover = new ImageIcon(book.getImagePath());
+    JLabel coverLabel = new JLabel(new ImageIcon(bookCover.getImage().getScaledInstance(160, 240, Image.SCALE_SMOOTH)));
 
-            }
-        });
-    
-        // Buy Now button
-        JButton buyNowButton = new JButton("Buy Now");
-        buyNowButton.setBackground(Color.GRAY);
-        buyNowButton.setForeground(Color.BLACK);
-        buyNowButton.setFont(new Font("Arial", Font.BOLD, 12));
-        buyNowButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Logic to redirect user to purchase page
-                JOptionPane.showMessageDialog(null, "Redirecting to the payment page for " + book.getTitle());
-            }
-        });
-    
-        // Panel for buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout());
-        buttonPanel.add(addToCartButton);
-        buttonPanel.add(buyNowButton);
-    
-        // Add components to card
-        card.add(coverLabel, BorderLayout.NORTH);
-        card.add(titleLabel, BorderLayout.CENTER);
-        card.add(authorLabel, BorderLayout.SOUTH);
-        card.add(priceLabel, BorderLayout.SOUTH);
-        card.add(buttonPanel, BorderLayout.SOUTH);
-    
-        return card;
+    // Title
+    JLabel titleLabel = new JLabel(book.getTitle(), JLabel.CENTER);
+    try {
+        // Load Poppins font
+        InputStream fontStream = new FileInputStream("src/fonts/Poppins-Bold.ttf");
+        Font poppinsFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(18f); // Set font size
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        ge.registerFont(poppinsFont);
+        titleLabel.setFont(poppinsFont.deriveFont(Font.BOLD)); // Set font to bold
+    } catch (Exception e) {
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18)); // Fallback font
+        e.printStackTrace();
     }
     
-    private JLabel createSectionTitle(String title) {
-        JLabel sectionTitle = new JLabel(title, JLabel.CENTER);
-        sectionTitle.setFont(new Font("Comic Sans MS", Font.BOLD, 28)); // Change font for section title
-        sectionTitle.setForeground(Color.BLUE); // Optional: Change color for section title
-        sectionTitle.setPreferredSize(new Dimension(200, 40));
-        return sectionTitle;
+    titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0)); // Bottom padding
+
+    // Author
+    JLabel authorLabel = new JLabel("By " + book.getAuthor(), JLabel.CENTER);
+    authorLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+
+    // Price (in INR)
+    JLabel priceLabel = new JLabel("₹ " + book.getPrice(), JLabel.CENTER);
+    priceLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+
+    // Add to Cart button
+    JButton addToCartButton = new JButton("Add to Cart");
+    addToCartButton.setBackground(Color.getHSBColor(208, 75, 65));
+    addToCartButton.setForeground(Color.BLACK);
+    addToCartButton.setFont(new Font("Arial", Font.BOLD, 12));
+    addToCartButton.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            cart.add(book);
+            JOptionPane.showMessageDialog(null, book.getTitle() + " added to cart.");
+            updateCartLabel(); // Update cart count
+        }
+    });
+
+    JButton buyNowButton = new JButton("Buy Now");
+    buyNowButton.setBackground(Color.LIGHT_GRAY);
+    buyNowButton.setForeground(Color.BLACK);
+    buyNowButton.setFont(new Font("Arial", Font.BOLD, 12));
+    buyNowButton.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // Redirect to the payment window
+        new PaymentFrame();
     }
+});
+
+    // Panel for buttons
+    JPanel buttonPanel = new JPanel(new FlowLayout());
+    buttonPanel.add(addToCartButton);
+    buttonPanel.add(buyNowButton);
+
+    // Add components to card
+    card.add(coverLabel, BorderLayout.NORTH);
+    card.add(titleLabel, BorderLayout.CENTER);
+    card.add(authorLabel, BorderLayout.SOUTH);
+    card.add(priceLabel, BorderLayout.SOUTH);
+    card.add(buttonPanel, BorderLayout.SOUTH);
+
+    return card;
+}
+
+
+private JLabel createSectionTitle(String title) {
+    JLabel sectionTitle = new JLabel(title, JLabel.CENTER);
+        
+    try {
+        // Load Poppins font (ensure path is correct)
+        InputStream fontStream = new FileInputStream("src/fonts/Poppins-Bold.ttf");
+        Font poppinsFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(28f);
+        GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(poppinsFont);
+        sectionTitle.setFont(poppinsFont.deriveFont(Font.BOLD));
+    } catch (Exception e) {
+        sectionTitle.setFont(new Font("Arial", Font.BOLD, 28)); // Fallback font
+        e.printStackTrace();
+    }
+    
+    sectionTitle.setForeground(Color.DARK_GRAY); // Color of the text
+    sectionTitle.setHorizontalAlignment(SwingConstants.CENTER); // Center the text
+    sectionTitle.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0)); // Add padding at top and bottom
+    
+    return sectionTitle;
+}
+
     private void updateCartLabel() {
         cartLabel.setText("Cart: " + cart.size() + " items");
     }
-    
     private void viewCart() {
         JFrame cartFrame = new JFrame("Your Cart");
         cartFrame.setSize(800, 600);
@@ -200,50 +230,118 @@ public class BookstoreFrame extends JFrame {
     
         String[] columnNames = {"Book Cover", "Book Description", "Quantity", "Price (INR)"};
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
-        JTable cartTable = new JTable(tableModel);
-        
+        JTable cartTable = new JTable(tableModel) {
+            // Override the method to ensure proper rendering of images
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 0) {
+                    return ImageIcon.class; // Image column
+                }
+                return super.getColumnClass(columnIndex);
+            }
+        };
+    
         // Increase font size for table
         cartTable.setFont(new Font("Arial", Font.PLAIN, 16)); // Set the font size to 16
-        cartTable.setRowHeight(80); // Increase row height for better visibility
+        cartTable.setRowHeight(120); // Increase row height for better visibility
     
         double totalPrice = 0.0;
     
         for (Book book : cart) {
-            // Load and scale the book cover image
             ImageIcon bookCover = new ImageIcon(book.getImagePath());
             Image scaledImage = bookCover.getImage().getScaledInstance(80, 120, Image.SCALE_SMOOTH);
-            
-            // Add image directly to the table model
+            ImageIcon scaledIcon = new ImageIcon(scaledImage);
+    
             Object[] rowData = {
-                new ImageIcon(scaledImage), // Image in first column
-                "<html><b>" + book.getTitle() + "</b><br>By " + book.getAuthor() + "</html>", // Book description
-                1, // Quantity
-                String.format("₹%.2f", book.getPrice()) // Price in INR
+                scaledIcon, // Image in first column
+                "<html><b>" + book.getTitle() + "</b><br>By " + book.getAuthor() + "</html>",
+                1, // Default quantity
+                String.format("₹%.2f", book.getPrice())
             };
-            
+    
             tableModel.addRow(rowData);
             totalPrice += book.getPrice();
         }
     
-        // Add total price row
         Object[] totalRow = {"", "Total", "", String.format("₹%.2f", totalPrice)};
         tableModel.addRow(totalRow);
     
-        // Disable editing on the table
-        cartTable.setDefaultEditor(Object.class, null);
+        cartTable.setDefaultEditor(Object.class, null); // Disable editing for the table
     
         cartFrame.add(new JScrollPane(cartTable), BorderLayout.CENTER);
     
         JButton paymentButton = new JButton("Make Payment");
         paymentButton.setBackground(Color.GREEN);
-        paymentButton.addActionListener(e -> JOptionPane.showMessageDialog(null, "Redirecting to payment page..."));
+        paymentButton.addActionListener(e -> {
+        new PaymentFrame();
+    });
         cartFrame.add(paymentButton, BorderLayout.SOUTH);
     
         cartFrame.setVisible(true);
     }
     
+    class QuantityCellEditor extends DefaultCellEditor {
+    private JPanel panel;
+    private JLabel quantityLabel;
+    private JButton increaseButton;
+    private JButton decreaseButton;
+    private DefaultTableModel tableModel; // Declare the table model
+    private int row;
+    public QuantityCellEditor(DefaultTableModel tableModel  ) {
+        super(new JCheckBox());
+        panel = new JPanel();
+        panel.setLayout(new FlowLayout());
+        quantityLabel = new JLabel("1");
+
+        increaseButton = new JButton("+");
+        increaseButton.addActionListener(e -> {
+            int quantity = Integer.parseInt(quantityLabel.getText());
+            quantity++;
+            quantityLabel.setText(String.valueOf(quantity));
+        });
+
+        decreaseButton = new JButton("-");
+        decreaseButton.addActionListener(e -> {
+            int quantity = Integer.parseInt(quantityLabel.getText());
+            if (quantity > 1) {
+                quantity--;
+                quantityLabel.setText(String.valueOf(quantity));
+            }
+        });
+
+        panel.add(decreaseButton);
+        panel.add(quantityLabel);
+        panel.add(increaseButton);
+    }
+
+    @Override
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        this.row = row;
+        quantityLabel.setText(value.toString());
+        return panel;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+        int quantity = Integer.parseInt(quantityLabel.getText());
+        double pricePerUnit = cart.get(row).getPrice();
+        double newPrice = quantity * pricePerUnit;
     
-    // Method to update price in the table based on quantity
+        String formattedPrice = String.format("₹%.2f", newPrice);
+        tableModel.setValueAt(formattedPrice, row, 3); // Assuming price is in column index 3
+    
+        double totalPrice = 0.0;
+        for (int i = 0; i < tableModel.getRowCount() - 1; i++) { // Exclude the last row (total row)
+            String priceStr = (String) tableModel.getValueAt(i, 3);
+            totalPrice += Double.parseDouble(priceStr.replace("₹", "").replace(",", ""));
+        }
+    
+        tableModel.setValueAt(String.format("₹%.2f", totalPrice), tableModel.getRowCount() - 1, 3);
+    
+        return quantity; // Return the updated quantity
+    }
+    
+}
     private void updatePrice(DefaultTableModel tableModel, int row, int quantity, double pricePerUnit) {
         double newPrice = quantity * pricePerUnit;
         String formattedPrice = String.format("₹%.2f", newPrice);
@@ -266,7 +364,6 @@ public class BookstoreFrame extends JFrame {
 private void updateTotalPriceLabel(double[] totalPrice, JPanel cartPanel) {
     double newTotal = 0.0;
 
-    // Iterate through the components of the cart panel to find price labels
     Component[] components = cartPanel.getComponents();
     for (Component comp : components) {
         if (comp instanceof JLabel) {
@@ -311,55 +408,6 @@ private void updateTotalPriceLabel(double[] totalPrice, JPanel cartPanel) {
         return 1;
     }
     
-    
-
-// Function to return books not in the cart (suggestions)
-private List<Book> getSuggestions() {
-    List<Book> allBooks = getAllBooks(); // Fetch all books available in the store
-    List<Book> suggestions = new ArrayList<>();
-    for (Book book : allBooks) {
-        if (!cart.contains(book)) {
-            suggestions.add(book);
-        }
-    }
-    return suggestions;
-}
-private List<Book> getAllBooks() {
-    List<Book> books = new ArrayList<>();
-
-    books.add(new Book(1, "Rich Dad Poor Dad", "Robert Kiyosaki", 500.00, "new", "src/images/rich_dad_poor_dad.jpeg"));
-    books.add(new Book(2, "The Alchemist", "Paulo Coelho", 400.00, "new", "src/images/the_alchemist.jpeg"));
-    books.add(new Book(3, "Atomic Habits", "James Clear", 650.00, "new", "src/images/atomic_habits.jpeg"));
-    books.add(new Book(4, "The Power of Now", "Eckhart Tolle", 350.00, "old", "src/images/power_of_now.jpeg"));
-    books.add(new Book(5, "Sapiens", "Yuval Noah Harari", 550.00, "new", "src/images/sapiens.jpeg"));
-    books.add(new Book(6, "The Subtle Art of Not Giving a F*ck", "Mark Manson", 300.00, "new", "src/images/subtle_art.jpeg"));
-    books.add(new Book(7, "Think and Grow Rich", "Napoleon Hill", 450.00, "new", "src/images/think_and_grow_rich.jpeg"));
-    books.add(new Book(8, "The 4-Hour Work Week", "Tim Ferriss", 600.00, "new", "src/images/4_hour_work_week.jpeg"));
-    books.add(new Book(9, "Deep Work", "Cal Newport", 500.00, "old", "src/images/deep_work.jpeg"));
-    books.add(new Book(10, "Start With Why", "Simon Sinek", 550.00, "new", "src/images/start_with_why.jpeg"));
-
-    return books;
-}
-
-// Function to create a suggestion card with book image and title
-private JPanel createSuggestionCard(Book book) {
-    JPanel card = new JPanel(new BorderLayout());
-    card.setPreferredSize(new Dimension(150, 240)); // Adjust size of suggestion cards
-
-    // Book cover image
-    ImageIcon bookCover = new ImageIcon(book.getImagePath());
-    JLabel coverLabel = new JLabel(new ImageIcon(bookCover.getImage().getScaledInstance(120, 180, Image.SCALE_SMOOTH)));
-
-    // Book title and author
-    JLabel titleLabel = new JLabel("<html><b>" + book.getTitle() + "</b><br>By " + book.getAuthor() + "</html>", JLabel.CENTER);
-    titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
-
-    card.add(coverLabel, BorderLayout.NORTH);
-    card.add(titleLabel, BorderLayout.CENTER);
-
-    return card;
-}
-
     public static void main(String[] args) {
         new BookstoreFrame(1);  // Example to test the bookstore frame
     }
